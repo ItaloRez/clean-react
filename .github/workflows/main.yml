@@ -5,35 +5,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup Node.js
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
+      - name: Checkout
+        uses: actions/checkout@v1
+
       - name: Install dependencies
         run: npm install
+
       - name: Run tests
         run: npm test
-        env:
-          CI: true
-      - name: Upload test results
-        uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: test-results
-          path: test-results.xml
-      - name: Build
-        run: npm run build --if-present
-      - name: Notify
-        uses: dawidd6/action-send-mail@v2
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          username: ${{ secrets.EMAIL }}
-          password: ${{ secrets.PASSWORD }}
-          subject: Pipeline Status
-          body: |
-            Pipeline Status: ${{ job.status }}
-          to: ${{ secrets.EMAIL }}
-          from: ${{ secrets.EMAIL }}
-          content_type: text/plain
