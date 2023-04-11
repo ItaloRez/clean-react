@@ -4,6 +4,7 @@ on: [push]
 jobs:
   install_dependencies:
     runs-on: ubuntu-latest
+    environment: dev
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -11,10 +12,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-  run_tests_and_coverage:
-    needs: install_dependencies
-    runs-on: ubuntu-latest
-    steps:
       - name: Run tests
         run: npm test
 
@@ -24,17 +21,9 @@ jobs:
           name: coverage
           path: coverage
 
-  build:
-    needs: install_dependencies
-    runs-on: ubuntu-latest
-    steps:
       - name: Build
         run: npm run build
 
-  notify_on_email_success_or_failure:
-    needs: [run_tests_and_coverage, build]
-    runs-on: ubuntu-latest
-    steps:
       - name: Notify on email success or failure
         uses: dawidd6/action-send-mail@v2
         with:
