@@ -2,7 +2,7 @@ name: Pipeline
 on: [push]
 
 jobs:
-  build:
+  install_dependencies:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -11,5 +11,39 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+  run_tests_and_coverage:
+    needs: install_dependencies
+    runs-on: ubuntu-latest
+    steps:
       - name: Run tests
         run: npm test
+
+      - name: Upload coverage to artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: coverage
+          path: coverage
+
+  build:
+    needs: install_dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        run: npm run build
+
+  notify_on_email_success_or_failure:
+    needs: [run_tests_and_coverage, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify on email success or failure
+        uses: dawidd6/action-send-mail@v2
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: ${{ github.repository }} build ${{ github.sha }}
+          body: ${{ job.status }}
+          to: ${{ secrets.EMAIL_TO }}
+          from: ${{ secrets.EMAIL_FROM }}
+          content_type: text/plain
